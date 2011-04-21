@@ -41,21 +41,21 @@ function newsletter_list_form() {
 
     $condition = array();
     $condition['where'][] = "n.type = 'newsletter'";
-    $condition['args'] = array();
+    $condition['args'][] = array();
 
     if($title) {
-        $condition['where'][] = "n.title LIKE '%%%s%%'";
-        $condition['args'][] = $title;
+        $condition['where'][] = "n.title LIKE :title";
+        $condition['args'][':title'] = $title;
     }
 
     if($date_from) {
-        $condition['where'][] = "nl.sending_date >= %d";
-        $condition['args'][] = strtotime($date_from . ' 00:00:00');
+        $condition['where'][] = "nl.sending_date >= :date_min";
+        $condition['args'][':date_min'] = strtotime($date_from . ' 00:00:00');
     }
 
     if($date_to) {
-        $condition['where'][] = "nl.sending_date <= %d";
-        $condition['args'][] = strtotime($date_to . ' 23:59:59');
+        $condition['where'][] = "nl.sending_date <= :date_max";
+        $condition['args'][':date_max'] = strtotime($date_to . ' 23:59:59');
     }
     
     $rows_per_page = 20;
@@ -68,9 +68,9 @@ function newsletter_list_form() {
         FROM {node} n
         LEFT JOIN {newsletter_list} nl ON nl.nid = n.nid
         WHERE " . $where_conditions . " ORDER BY nid DESC";
-
+    //pre($sql); die();
     $query_count = "SELECT COUNT(*) FROM {node} n LEFT JOIN {newsletter_list} nl ON nl.nid = n.nid WHERE " . $where_conditions;
-    //$result = pager_query($sql, $rows_per_page, 0, $query_count, $condition['args']);
+    $result = db_query($sql, $condition['args']);
  /*   
     while($data = db_fetch_object($result)) {
         $form['newsletter_title'][$data->nid] = array('#value' => l($data->title, 'newsletter/manage/edit/' . $data->nid));

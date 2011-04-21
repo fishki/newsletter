@@ -1,2 +1,154 @@
 <?php
 // $Id:$
+
+function pre($txt) {
+  echo '<pre>';
+  print_r($txt);
+  echo '</pre>';
+}
+
+function newsletter_perm() {
+  return array(
+    'admin newsletter', 
+    'create newsletter', 
+    'edit own newsletter', 
+    'edit any newsletter', 
+    'delete own newsletter', 
+    'delete any newsletter'
+  );
+}
+
+function newsletter_theme() {
+  return array(
+    'newsletter_list_form' => array(
+      'arguments' => array('form' => NULL),
+    ),
+    'newsletter_list_search_form' => array(
+      'arguments' => array('elements' => NULL),
+      //'file' => 'newsletter.admin.inc',
+    ),
+    'newsletter_list_user_form' => array(
+      'arguments' => array('elements' => NULL),
+      //'file' => 'newsletter.admin.inc',
+    ),
+  );
+}
+
+function newsletter_menu() {
+    $items['newsletter'] = array(
+        'title' => t('Manage campaings'),
+        'page callback' => 'drupal_get_form',
+        'access callback' => 'user_access',
+        'access arguments' => array('admin newsletter'),
+        'page arguments' => array('newsletter_list_form'),
+        'file' => 'newsletter.admin.inc',
+    );
+
+    $items['newsletter/manage'] = array(
+        'title' => t('Newsletters'),
+        'type' => MENU_DEFAULT_LOCAL_TASK,
+        'weight' => 1,
+    );
+
+    $items['newsletter/manage/list'] = array(
+        'title' => t('List'),
+        'type' => MENU_DEFAULT_LOCAL_TASK,
+        'weight' => 1,
+    );
+
+    $items['newsletter/manage/add'] = array(
+        'title' => t('Add newsletter'),
+        'page callback' => 'node_add',
+        'access callback' => 'user_access',
+        'access arguments' => array('admin newsletter'),
+        'page arguments' => array('newsletter'),
+        'file' => 'node.pages.inc',
+        'file path' => drupal_get_path('module', 'node'),
+        'type' => MENU_LOCAL_TASK,
+        'weight' => 2,
+    );
+
+    $items['newsletter/manage/edit/%node'] = array(
+        'title' => t('Edit newsletter'),
+        'page callback' => 'node_page_edit',
+        'access callback' => 'user_access',
+        'access arguments' => array('admin newsletter'),
+        'page arguments' => array(3),
+        'file' => 'node.pages.inc',
+        'file path' => drupal_get_path('module', 'node'),
+        'type' => MENU_LOCAL_TASK,
+        'weight' => 3,
+    );
+
+   
+    $items['newsletter/template/%'] = array(
+        'page callback' => 'newsletter_rpeview',
+        'page arguments' => array(2),
+        'access callback' => TRUE,
+        'file' => 'newsletter.admin.inc',
+        'type' => MENU_CALLBACK,
+    );
+
+    $items['newsletter/users'] = array(
+        'title' => t('Users'),
+        'page callback' => 'drupal_get_form',
+        'access callback' => 'user_access',
+        'access arguments' => array('admin newsletter'),
+        'page arguments' => array('newsletter_list_user_form'),
+        'file' => 'newsletter.admin.inc',
+        'type' => MENU_LOCAL_TASK,
+        'weight' => 2,
+    );
+    
+    $items['newsletter/users/list'] = array(
+        'title' => t('List'),
+        'type' => MENU_DEFAULT_LOCAL_TASK,
+        'weight' => 1,
+    );
+        
+    $items['newsletter/users/%user/subscribe'] = array(
+        'title' => t('Subscribe'),
+        'page callback' => 'newsletter_user_subscribe',
+        'access callback' => 'user_access',
+        'access arguments' => array('admin newsletter'),
+        'page arguments' => array(2),
+        'file' => 'newsletter.admin.inc',
+        'type' => MENU_LOCAL_TASK,
+        'weight' => 2,
+     );
+
+    $items['confirm_subscription/%'] = array(
+        'title' => t('Subscribe confirmation'),
+        'page callback' => 'newsletter_user_subscribe_confirmation',
+        'access callback' => 'user_access',
+        'access arguments' => array('admin newsletter'),
+        'page arguments' => array(1),
+        'file' => 'newsletter.admin.inc',
+        'type' => MENU_CALLBACK,
+        'weight' => 2,
+     );
+
+    $items['send_mailiing/%node'] = array(
+        'title' => t('Mail sending'),
+        'page callback' => 'newsletter_send',
+        'access callback' => 'user_access',
+        'access arguments' => array('admin newsletter'),
+        'page arguments' => array(1),
+        'file' => 'newsletter.admin.inc',
+        'type' => MENU_CALLBACK,
+        'weight' => 2,
+     );
+
+    $items['unsubscribe/%'] = array(
+        'title' => t('Mail unsubscribing'),
+        'page callback' => 'newsletter_mail_unsubscribing',
+        'access callback' => 'user_access',
+        'access arguments' => array('admin newsletter'),
+        'page arguments' => array(1),
+        'file' => 'newsletter.admin.inc',
+        'type' => MENU_CALLBACK,
+        'weight' => 2,
+     );
+    
+    return $items;
+}

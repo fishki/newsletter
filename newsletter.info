@@ -1,0 +1,6 @@
+name = Newsletter
+package = Newsletter
+description = Provides Newsletter sending tool.
+core = 6.x
+dependencies[] = node
+dependencies[] = user

@@ -1,15 +1,6 @@
 <?php
 // $Id:$
 
-/**
- * @file
- * Install, update, and uninstall functions for Newsletter module.
- *
- */
-
-/**
- * Implementation of hook_schema().
- */
 function newsletter_schema() {
 	$schema['newsletter_user_list'] = array(
 		'description' => 'Additional User info',

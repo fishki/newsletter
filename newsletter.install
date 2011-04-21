@@ -2,75 +2,61 @@
 // $Id:$
 
 function newsletter_schema() {
-	$schema['newsletter_user_list'] = array(
-		'description' => 'Additional User info',
-		'fields' => array(
-			'uid' => array(
-				'type' => 'serial',
-				'unsigned' => TRUE,
-				'not null' => TRUE,
-				'description' => 'ID of the record, users uid FK',
-			),
-			'approved' => array(
-				'type' => 'int',
-				'default' => 0,
-				'size' => 'tiny',
-				'description' => 'The flag for approvement',
-			),
-			'unsubscribed' => array(
-				'type' => 'int',
-				'default' => 0,
-				'size' => 'tiny',
-				'description' => 'The flag for unsubscribing',
-			),
-			'unsubscribe_key' => array (
-				'type' => 'varchar',
-				'length' => '255',
-				'default' => '',
-				'not null' => TRUE,
-				'description' => 'MD5 unique key for unsubscribing',			
-			),
-			'approve_key' => array (
-				'type' => 'varchar',
-				'length' => '255',
-				'default' => '',
-				'not null' => TRUE,
-				'description' => 'MD5 unique key for approving by user',			
-			),
-		),
-		'primary key' => array('uid'),
-	);
+    $schema['newsletter_user_list'] = array(
+	'description' => 'Additional User info',
+	'fields' => array(
+            'uid' => array(
+                'type' => 'serial',
+                'unsigned' => TRUE,
+                'not null' => TRUE,
+		'description' => 'ID of the record, users uid FK',
+            ),
+            'approved' => array(
+                'type' => 'int',
+                'default' => 0,
+		'size' => 'tiny',
+		'description' => 'The flag for approvement',
+            ),
+            'unsubscribed' => array(
+                'type' => 'int',
+		'default' => 0,
+		'size' => 'tiny',
+		'description' => 'The flag for unsubscribing',
+            ),
+            'unsubscribe_key' => array (
+                'type' => 'varchar',
+                'length' => '255',
+                'default' => '',
+		'not null' => TRUE,
+		'description' => 'MD5 unique key for unsubscribing',			
+            ),
+            'approve_key' => array (
+                'type' => 'varchar',
+		'length' => '255',
+		'default' => '',
+		'not null' => TRUE,
+		'description' => 'MD5 unique key for approving by user',			
+            ),
+        ),
+	'primary key' => array('uid'),
+    );
 	
-	$schema['newsletter_list'] = array(
-		'description' => 'Newsletters info',
-		'fields' => array(
-			'nid' => array(
-				'type' => 'serial',
-				'unsigned' => TRUE,
-				'not null' => TRUE,
-				'description' => 'ID of the record, node nid FK',
-			),
-			'sending_date' => array(
-				'type' => 'int',
-				'default' => 0,
-				'description' => 'Newsletter sending date',
-			),
-		),
-		'primary key' => array('nid'),
-	);
-	return $schema;
-}
-
-/**
- * Implementation of hook_install().
- */
-function newsletter_install() {
-	drupal_install_schema('newsletter');
-}
-
-/**
- * Implementation of hook_uninstall().
- */
-function newsletter_uninstall() {
-	drupal_uninstall_schema('newsletter');
+    $schema['newsletter_list'] = array(
+        'description' => 'Newsletters info',
+	'fields' => array(
+            'nid' => array(
+                'type' => 'serial',
+		'unsigned' => TRUE,
+		'not null' => TRUE,
+		'description' => 'ID of the record, node nid FK',
+            ),
+            'sending_date' => array(
+                'type' => 'int',
+		'default' => 0,
+		'description' => 'Newsletter sending date',
+            ),
+        ),
+	'primary key' => array('nid'),
+    );
+    return $schema;
 }

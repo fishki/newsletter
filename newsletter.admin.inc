@@ -58,7 +58,7 @@ function newsletter_list_form() {
         $condition['args'][':date_max'] = strtotime($date_to . ' 23:59:59');
     }
     
-    $rows_per_page = 20;
+    //$rows_per_page = 20;
     $where_conditions = implode(' AND ', $condition['where']);
     
     $sql = "SELECT
@@ -69,8 +69,23 @@ function newsletter_list_form() {
         LEFT JOIN {newsletter_list} nl ON nl.nid = n.nid
         WHERE " . $where_conditions . " ORDER BY nid DESC";
     //pre($sql); die();
-    $query_count = "SELECT COUNT(*) FROM {node} n LEFT JOIN {newsletter_list} nl ON nl.nid = n.nid WHERE " . $where_conditions;
-    $result = db_query($sql, $condition['args']);
+    //$query_count = "SELECT COUNT(*) FROM {node} n LEFT JOIN {newsletter_list} nl ON nl.nid = n.nid WHERE " . $where_conditions;
+    $query = db_select('node', 'n') -> extend('PagerDefault');
+      $query->join('newsletter_list', 'nl', 'n.nid = nl.nid');
+      $query->fields('n', array('nid', 'title'));
+      $query->fields('nl', array('sending_date'));
+      //$query->condition('type', 'newsletter');
+      $result = $query->execute();
+      
+      $output = '';
+      foreach($result as $row) {
+        echo $row->title;
+      }
+      pre($output); die();
+      //$query -> fetchAssoc();
+      
+      
+    //$result = db_query($sql, $condition['args']);
  /*   
     while($data = db_fetch_object($result)) {
         $form['newsletter_title'][$data->nid] = array('#value' => l($data->title, 'newsletter/manage/edit/' . $data->nid));

@@ -70,18 +70,20 @@ function newsletter_list_form() {
         WHERE " . $where_conditions . " ORDER BY nid DESC";
     //pre($sql); die();
     //$query_count = "SELECT COUNT(*) FROM {node} n LEFT JOIN {newsletter_list} nl ON nl.nid = n.nid WHERE " . $where_conditions;
-    $query = db_select('node', 'n') -> extend('PagerDefault');
-      $query->join('newsletter_list', 'nl', 'n.nid = nl.nid');
-      $query->fields('n', array('nid', 'title'));
-      $query->fields('nl', array('sending_date'));
-      //$query->condition('type', 'newsletter');
-      $result = $query->execute();
-      
-      $output = '';
+    $query = db_select('node', 'n')->extend('PagerDefault');
+    $query->leftJoin('newsletter_list', 'nl', 'n.nid = nl.nid');
+    $query->fields('n', array('nid', 'title'));
+    $query->fields('nl', array('sending_date'));
+    $query->condition('type', 'newsletter');
+    $result = $query->execute();
+      pre($result); die();
       foreach($result as $row) {
-        echo $row->title;
+        $output[$i]['nid'] = $row->nid;
+        $output[$i]['title'] = $row->title;
+        $i++;
       }
-      pre($output); die();
+    
+     //pre($output); die();
       //$query -> fetchAssoc();
       
       

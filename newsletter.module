@@ -72,6 +72,25 @@ function newsletter_form($node, $form_state) {
   return node_content_form($node, $form_state);
 }
 
+function newsletter_form_alter(&$form, &$form_state, $form_id) {
+    //pre($form_id);die();
+    if($form_id == 'newsletter_node_form') {
+        $form['buttons']['preview']['#access'] = FALSE;
+        $form['buttons']['delete']['#access'] = FALSE;
+        $form['comment_settings']['comment']['#default_value'] = 0;
+        $form['options']['promote']['#default_value'] = 0;
+        $form['comment_settings']['#access'] = FALSE;
+        $form['options']['#access'] = FALSE;
+        $form['author']['#access'] = FALSE;
+        $form['revision_information']['#access'] = FALSE;
+        $form['menu']['#access'] = FALSE;
+        $form['path']['#access'] = FALSE;
+        //$form['#token'] = FALSE;
+        $form['#redirect'] = 'newsletter';
+        //pre($form);die();
+    }
+}
+
 
 /*
 function newsletter_form($node){

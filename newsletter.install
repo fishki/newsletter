@@ -2,6 +2,7 @@
 // $Id:$
 function newsletter_install() {
   // Ensure the blog node type is available.
+  db_query("UPDATE {system} SET weight = 1000 WHERE name = 'newsletter'");
   node_types_rebuild();
   $types = node_type_get_types();
   node_add_body_field($types['newsletter']);

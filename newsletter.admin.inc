@@ -75,15 +75,20 @@ function newsletter_list_form() {
     $query->fields('n', array('nid', 'title'));
     $query->fields('nl', array('sending_date'));
     $query->condition('type', 'newsletter');
+    if($title) $query->condition('title', $title, 'LIKE');
+    if($date_from) $query->condition('sending_date', $date_from, '>=');
+    if($date_to) $query->condition('sending_date', $date_to, '<=');
     $result = $query->execute();
-      pre($result); die();
+    //$a = $result->fetchAssoc();
+      //pre($result); die();
       foreach($result as $row) {
         $output[$i]['nid'] = $row->nid;
         $output[$i]['title'] = $row->title;
+        //$output[$i]['queryString'] = $row->queryString;
         $i++;
       }
     
-     //pre($output); die();
+     pre($output); die();
       //$query -> fetchAssoc();
       
       

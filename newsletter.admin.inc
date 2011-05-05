@@ -38,48 +38,46 @@ function newsletter_list_form() {
         '#type' => 'submit',
         '#value' => t('Search'),
     );
-
-    $condition = array();
-    $condition['where'][] = "n.type = 'newsletter'";
-    $condition['args'][] = array();
-
-    if($title) {
-        $condition['where'][] = "n.title LIKE :title";
-        $condition['args'][':title'] = $title;
-    }
-
-    if($date_from) {
-        $condition['where'][] = "nl.sending_date >= :date_min";
-        $condition['args'][':date_min'] = strtotime($date_from . ' 00:00:00');
-    }
-
-    if($date_to) {
-        $condition['where'][] = "nl.sending_date <= :date_max";
-        $condition['args'][':date_max'] = strtotime($date_to . ' 23:59:59');
-    }
-    
-    //$rows_per_page = 20;
-    $where_conditions = implode(' AND ', $condition['where']);
-    
-    $sql = "SELECT
-        n.nid,
-        n.title,
-        nl.sending_date
-        FROM {node} n
-        LEFT JOIN {newsletter_list} nl ON nl.nid = n.nid
-        WHERE " . $where_conditions . " ORDER BY nid DESC";
-    //pre($sql); die();
-    //$query_count = "SELECT COUNT(*) FROM {node} n LEFT JOIN {newsletter_list} nl ON nl.nid = n.nid WHERE " . $where_conditions;
+    $header = array(
+      'title' => array('data' => t('Title'), 'field' => 'n.title'),
+      'sending_date' => array('data' => t('Sending date'), 'field' => 'nl.sending_date'),
+    );
     $query = db_select('node', 'n')->extend('PagerDefault');
     $query->leftJoin('newsletter_list', 'nl', 'n.nid = nl.nid');
-    $query->fields('n', array('nid', 'title'));
-    $query->fields('nl', array('sending_date'));
-    $query->condition('type', 'newsletter');
-    if($title) $query->condition('title', $title, 'LIKE');
-    if($date_from) $query->condition('sending_date', $date_from, '>=');
-    if($date_to) $query->condition('sending_date', $date_to, '<=');
+    $query->condition('n.type', 'newsletter');
+    if($title) $query->condition('n.title', $title, 'LIKE');
+    if($date_from) $query->condition('nl.sending_date', $date_from, '>=');
+    if($date_to) $query->condition('nl.sending_date', $date_to, '<=');
+    $count_query = clone $query;
+    $count_query->addExpression('COUNT(n.nid)');
+    $query->extend('PagerDefault')->extend('TableSort')
+      ->fields('n', array('nid', 'title'))
+      ->fields('nl', array('sending_date'))
+      ->limit(50)
+      ->orderByHeader($header)
+      ->setCountQuery($count_query);
     $result = $query->execute();
-    //$a = $result->fetchAssoc();
+ /////%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
+    
+    foreach ($result as $node) {
+    $options[$node->nid] = array(
+      'title' => $node->title,
+      'sending_date' =>  $node->sending_date,
+    );
+  }
+
+  $form['nodes'] = array(
+    '#type' => 'tableselect',
+    '#header' => $header,
+    '#options' => $options,
+    '#empty' => t('No letter available.'),
+  );
+  $form['pager'] = array('#markup' => theme('pager'));
+  return $form;
+  
+///////////////////////%%%%%%%%%%%%%%%%%%%%%%%%%%
+    
+    
       //pre($result); die();
       foreach($result as $row) {
         $output[$i]['nid'] = $row->nid;
@@ -101,7 +99,7 @@ function newsletter_list_form() {
         $form['actions_send'][$data->nid] = array('#value' => l(t('Send'), 'send_mailiing/' . $data->nid, array('attributes' => array('calss' => 'send_link'))));
     }
   */
-    return $form;
+
   
  
 }

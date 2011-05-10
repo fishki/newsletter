@@ -60,8 +60,8 @@ function newsletter_schema() {
             ),
             'sending_date' => array(
                 'type' => 'int',
-		'default' => 0,
-		'description' => 'Newsletter sending date',
+                'default' => 0,
+                'description' => 'Newsletter sending date',
             ),
         ),
 	'primary key' => array('nid'),

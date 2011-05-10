@@ -6,7 +6,7 @@ function newsletter_list_form() {
         '#title' => t('Search'),
         '#collapsible' => TRUE,
         '#collapsed' => FALSE,
-        '#theme' => 'newsletter_list_search_form',
+        //'#theme' => 'newsletter_list_search_form',
     );
     
     $title = isset($_GET['title']) ? trim($_GET['title']) : FALSE;
@@ -41,11 +41,12 @@ function newsletter_list_form() {
     $header = array(
       'title' => array('data' => t('Title'), 'field' => 'n.title'),
       'sending_date' => array('data' => t('Sending date'), 'field' => 'nl.sending_date'),
+      'actions' => array('data' => t('Actions'), ),
     );
     $query = db_select('node', 'n')->extend('PagerDefault');
     $query->leftJoin('newsletter_list', 'nl', 'n.nid = nl.nid');
     $query->condition('n.type', 'newsletter');
-    if($title) $query->condition('n.title', $title, 'LIKE');
+    if($title) $query->condition('n.title', '%' . db_like($title) . '%', 'LIKE');
     if($date_from) $query->condition('nl.sending_date', $date_from, '>=');
     if($date_to) $query->condition('nl.sending_date', $date_to, '<=');
     $count_query = clone $query;
@@ -58,11 +59,12 @@ function newsletter_list_form() {
       ->setCountQuery($count_query);
     $result = $query->execute();
  /////%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
-    
+    $options = array();
     foreach ($result as $node) {
     $options[$node->nid] = array(
       'title' => $node->title,
       'sending_date' =>  $node->sending_date,
+      'actions' => '<div>Preview</div><div>Send</div>',
     );
   }
 
@@ -73,24 +75,7 @@ function newsletter_list_form() {
     '#empty' => t('No letter available.'),
   );
   $form['pager'] = array('#markup' => theme('pager'));
-  return $form;
   
-///////////////////////%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
-    
-      //pre($result); die();
-      foreach($result as $row) {
-        $output[$i]['nid'] = $row->nid;
-        $output[$i]['title'] = $row->title;
-        //$output[$i]['queryString'] = $row->queryString;
-        $i++;
-      }
-    
-     pre($output); die();
-      //$query -> fetchAssoc();
-      
-      
-    //$result = db_query($sql, $condition['args']);
  /*   
     while($data = db_fetch_object($result)) {
         $form['newsletter_title'][$data->nid] = array('#value' => l($data->title, 'newsletter/manage/edit/' . $data->nid));
@@ -99,7 +84,15 @@ function newsletter_list_form() {
         $form['actions_send'][$data->nid] = array('#value' => l(t('Send'), 'send_mailiing/' . $data->nid, array('attributes' => array('calss' => 'send_link'))));
     }
   */
+  return $form;
+}
 
-  
- 
+function newsletter_list_form_submit($form, $form_state) {
+    //pre($form_state);die();
+    $get_search = array();
+    if (trim($form_state['values']['title'])) $get_search['title'] = trim($form_state['values']['title']);
+    if (trim($form_state['values']['date_from'])) $get_search['date_from'] = strtotime($form_state['values']['date_from']);
+    if (trim($form_state['values']['date_to'])) $get_search['date_to'] = strtotime($form_state['values']['date_to']);
+    $options['query'] = $get_search;
+    drupal_goto("newsletter", $options);
 }

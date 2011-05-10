@@ -6,7 +6,7 @@ function pre($txt) {
   print_r($txt);
   echo '</pre>';
 }
-
+/*
 function newsletter_theme() {
   return array(
     'newsletter_list_form' => array(
@@ -14,7 +14,7 @@ function newsletter_theme() {
     ),
   );
 }
-
+*/
 function newsletter_menu() {
     $items['newsletter'] = array(
         'title' => t('Manage campaings'),
@@ -45,6 +45,16 @@ function newsletter_menu() {
         'page arguments' => array('newsletter'),
         'file' => 'node.pages.inc',
         'file path' => drupal_get_path('module', 'node'),
+        'type' => MENU_LOCAL_TASK,
+        'weight' => 2,
+    );
+    $items['newsletter/users'] = array(
+        'title' => t('Users'),
+        'page callback' => 'drupal_get_form',
+        'access callback' => 'user_access',
+        'access arguments' => array('admin newsletter'),
+        'page arguments' => array('newsletter_list_user_form'),
+        'file' => 'newsletter.admin.inc',
         'type' => MENU_LOCAL_TASK,
         'weight' => 2,
     );
@@ -90,31 +100,3 @@ function newsletter_form_alter(&$form, &$form_state, $form_id) {
         //pre($form);die();
     }
 }
-
-
-/*
-function newsletter_form($node){
-    $type = node_type_get_type('type', $node);
-    $form['title'] = array(
-        '#type' => 'textfield',
-        '#title' => check_plain($type->title_label),
-        '#required' => TRUE,
-        '#default_value' => $node->title,
-        '#weight' => -5,
-        '#maxlength' => 255,
-    );
-
-    $form['body_filter']['body'] = array(
-        '#type' => 'textarea',
-        '#title' => check_plain($type->body_label),
-        '#default_value' => $node->body,
-        '#rows' => 15,
-        '#required' => TRUE,
-    );
-
-    //$form['body_filter']['filter'] = filter_form($node->format);
-    return $form;
-}
-*/
-
-

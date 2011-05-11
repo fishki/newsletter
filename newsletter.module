@@ -6,15 +6,22 @@ function pre($txt) {
   print_r($txt);
   echo '</pre>';
 }
-/*
+
 function newsletter_theme() {
   return array(
+      /*
     'newsletter_list_form' => array(
-      'arguments' => array('form' => NULL),
+      'arguments' => array('form' => NULL
+        ),
+       
+       */
+    'newsletter_list_search_form' => array(
+            'arguments' => array('elements' => NULL),
+            'file' => 'newsletter.admin.inc',
+            'render element' => 'search',
     ),
   );
 }
-*/
 function newsletter_menu() {
     $items['newsletter'] = array(
         'title' => t('Manage campaings'),

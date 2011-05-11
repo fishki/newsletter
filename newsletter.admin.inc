@@ -6,7 +6,7 @@ function newsletter_list_form() {
         '#title' => t('Search'),
         '#collapsible' => TRUE,
         '#collapsed' => FALSE,
-        //'#theme' => 'newsletter_list_search_form',
+        '#theme' => 'newsletter_list_search_form',
     );
     
     $title = isset($_GET['title']) ? trim($_GET['title']) : FALSE;
@@ -87,6 +87,7 @@ function newsletter_list_form() {
   return $form;
 }
 
+
 function newsletter_list_form_submit($form, $form_state) {
     //pre($form_state);die();
     $get_search = array();
@@ -96,3 +97,36 @@ function newsletter_list_form_submit($form, $form_state) {
     $options['query'] = $get_search;
     drupal_goto("newsletter", $options);
 }
+
+
+function theme_newsletter_list_search_form($variables) {
+  $elements = $variables['search'];
+  drupal_add_css(drupal_get_path('module', 'newsletter') . '/css/newsletter.css');
+  //drupal_add_js(drupal_get_path('module', 'newsletter') . '/js/jquery1.4.3.js');
+  drupal_add_js(drupal_get_path('module', 'newsletter') . '/js/jquery-ui-1.8.6.datepicker.min.js');
+  drupal_add_css(drupal_get_path('module', 'newsletter') . '/css/ui-lightness/jquery-ui-1.8.6.datepicker.css');
+  drupal_add_js("
+        $(document).ready(function(){
+            $('#search_date_from').datepicker({dateFormat: 'yy-mm-dd'});
+            $('#search_date_to').datepicker({dateFormat: 'yy-mm-dd'});
+            
+            
+        });
+    ", 'inline');
+
+    $output = '<table class="newsletter_search_table">
+        <tr>
+            <td colspan="2">' . drupal_render($elements['title']) . '</td>
+        </tr>
+        <tr>
+            <td>' . drupal_render($elements['date_from']) . '</td><td>' . drupal_render($elements['date_to']) . '</td>
+        </tr>
+        <tr>
+            <td colspan="2">' . drupal_render($elements['search_button']) . '</td>
+        </tr>
+    </table>';
+    //pre($elements);die();
+    return $output . drupal_render_children($elements);
+}
+
+

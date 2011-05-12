@@ -8,7 +8,6 @@ function newsletter_list_form() {
         '#collapsed' => FALSE,
         '#theme' => 'newsletter_list_search_form',
     );
-    
     $title = isset($_GET['title']) ? trim($_GET['title']) : FALSE;
     $form['search']['title'] = array(
         '#type' => 'textfield',
@@ -16,7 +15,6 @@ function newsletter_list_form() {
         '#default_value' => filter_xss($title, array()),
         '#size' => 60,
     );
-    
     $date_from = isset($_GET['date_from']) ? trim($_GET['date_from']) : FALSE;
     $form['search']['date_from'] = array(
         '#id' => 'search_date_from',
@@ -25,7 +23,6 @@ function newsletter_list_form() {
         '#default_value' => filter_xss($date_from, array()),
         '#size' => 20,
     );
-
     $date_to = isset($_GET['date_to']) ? trim($_GET['date_to']) : FALSE;
     $form['search']['date_to'] = array(
         '#id' => 'search_date_to',
@@ -43,6 +40,7 @@ function newsletter_list_form() {
       'sending_date' => array('data' => t('Sending date'), 'field' => 'nl.sending_date'),
       'actions' => array('data' => t('Actions'), ),
     );
+    
     $query = db_select('node', 'n')->extend('PagerDefault');
     $query->leftJoin('newsletter_list', 'nl', 'n.nid = nl.nid');
     $query->condition('n.type', 'newsletter');
@@ -58,7 +56,6 @@ function newsletter_list_form() {
       ->orderByHeader($header)
       ->setCountQuery($count_query);
     $result = $query->execute();
- /////%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   
     $options = array();
     foreach ($result as $node) {
     $options[$node->nid] = array(
@@ -67,7 +64,6 @@ function newsletter_list_form() {
       'actions' => '<div>Preview</div><div>Send</div>',
     );
   }
-
   $form['nodes'] = array(
     '#type' => 'tableselect',
     '#header' => $header,
@@ -87,32 +83,23 @@ function newsletter_list_form() {
   return $form;
 }
 
-
 function newsletter_list_form_submit($form, $form_state) {
-    //pre($form_state);die();
     $get_search = array();
     if (trim($form_state['values']['title'])) $get_search['title'] = trim($form_state['values']['title']);
-    if (trim($form_state['values']['date_from'])) $get_search['date_from'] = strtotime($form_state['values']['date_from']);
-    if (trim($form_state['values']['date_to'])) $get_search['date_to'] = strtotime($form_state['values']['date_to']);
+    if (trim($form_state['values']['date_from'])) $get_search['date_from'] = date('Y-m-d', strtotime($form_state['values']['date_from']));
+    if (trim($form_state['values']['date_to'])) $get_search['date_to'] = date('Y-m-d', strtotime($form_state['values']['date_to']));
     $options['query'] = $get_search;
     drupal_goto("newsletter", $options);
 }
 
-
 function theme_newsletter_list_search_form($variables) {
   $elements = $variables['search'];
   drupal_add_css(drupal_get_path('module', 'newsletter') . '/css/newsletter.css');
-  //drupal_add_js(drupal_get_path('module', 'newsletter') . '/js/jquery1.4.3.js');
-  drupal_add_js(drupal_get_path('module', 'newsletter') . '/js/jquery-ui-1.8.6.datepicker.min.js');
-  drupal_add_css(drupal_get_path('module', 'newsletter') . '/css/ui-lightness/jquery-ui-1.8.6.datepicker.css');
-  drupal_add_js("
-        $(document).ready(function(){
-            $('#search_date_from').datepicker({dateFormat: 'yy-mm-dd'});
-            $('#search_date_to').datepicker({dateFormat: 'yy-mm-dd'});
-            
-            
-        });
-    ", 'inline');
+  drupal_add_library('system', 'ui.datepicker');
+  drupal_add_js("jQuery(document).ready(function(){
+                  jQuery('#search_date_from').datepicker({dateFormat: 'yy-mm-dd'});
+                  jQuery('#search_date_to').datepicker({dateFormat: 'yy-mm-dd'});
+                })", 'inline');
 
     $output = '<table class="newsletter_search_table">
         <tr>
@@ -125,8 +112,89 @@ function theme_newsletter_list_search_form($variables) {
             <td colspan="2">' . drupal_render($elements['search_button']) . '</td>
         </tr>
     </table>';
-    //pre($elements);die();
     return $output . drupal_render_children($elements);
 }
 
+function newsletter_list_user_form() {
+  $form['search'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Search'),
+    '#collapsible' => TRUE,
+    '#collapsed' => FALSE,
+    //'#theme' => 'newsletter_list_user_search_form',
+  );
+  $mail = isset($_GET['mail']) ? trim($_GET['mail']) : FALSE;
+  $form['search']['mail'] = array(
+    '#type' => 'textfield',
+    '#title' => t('E-mail'),
+    '#default_value' => filter_xss($mail, array()),
+    '#size' => 60,
+  );
+  $unsubscribed = isset($_GET['unsubscribed']) ? trim($_GET['unsubscribed']) : FALSE;
+  $approved = isset($_GET['approved']) ? trim($_GET['approved']) : FALSE;
+  
+  $option = array(
+    'unsubscribed' => t('Unsubscribed'),
+    'approved' => t('Aproved'),
+  );
+  
+  $def_values = array();
+  if($unsubscribed) $def_values[] = 'unsubscribed';
+  if($approved) $def_values[] = 'approved'; 
+  
+  $form['search']['flags'] = array(
+        '#type' => 'checkboxes',
+        '#options' => $option,
+        '#default_value' => $def_values,
+    );
+  
+    $form['search']['search_button'] = array(
+        '#type' => 'submit',
+        '#value' => t('Search'),
+    );
+    $header = array(
+      'username' => array('data' => t('Username'), 'field' => 'u.name'),
+      'approved' => array('data' => t('Approved'), 'field' => 'nul.approved'),
+      'subscribed' => array('data' => t('Subscribed'), 'field' => 'nul.unsubscribed'),
+    );
+    $query = db_select('users', 'u')->extend('PagerDefault');
+    $query->leftJoin('newsletter_user_list', 'nul', 'u.uid = nul.uid');
+    $query->condition('u.status', '1');
+    if($mail) $query->condition('u.mail', '%' . db_like($mail) . '%', 'LIKE');
+    if($unsubscribed) $query->condition('nul.unsubscribed', '1');
+    if($approved) $query->condition('nul.approved', '1');
+    $count_query = clone $query;
+    $count_query->addExpression('COUNT(u.uid)');
+    $query->extend('TableSort')
+      ->fields('u', array('uid', 'name'))
+      ->fields('nul', array('approved', 'unsubscribed'))
+      ->limit(5)
+      ->orderByHeader($header)
+      ->setCountQuery($count_query);
+    $result = $query->execute();
+    $options = array();
+    foreach ($result as $user) {
+    $options[$user->uid] = array(
+      'username' => $user->name,
+      'approved' =>  $user->approved ? 'yes' : 'no',
+      'subscribed' =>  $user->unsubscribed ? 'yes' : 'no',
+    );
+  }
+  $form['users'] = array(
+    '#type' => 'tableselect',
+    '#header' => $header,
+    '#options' => $options,
+    '#empty' => t('No users available.'),
+  );
+  $form['pager'] = array('#markup' => theme('pager'));
+  return $form;
+}
 
+function newsletter_list_user_form_submit($form, $form_state) {
+    $get_search = array();
+    if (trim($form_state['values']['mail'])) $get_search['mail'] = trim($form_state['values']['mail']);
+    if ($form_state['values']['flags']['unsubscribed']) $get_search['unsubscribed'] = '1';
+    if ($form_state['values']['flags']['approved']) $get_search['approved'] = '1';
+    $options['query'] = $get_search;
+    drupal_goto("newsletter/users", $options);
+}

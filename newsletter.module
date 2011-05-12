@@ -65,7 +65,18 @@ function newsletter_menu() {
         'type' => MENU_LOCAL_TASK,
         'weight' => 2,
     );
-    
+    $items['newsletter/users/list'] = array(
+        'title' => t('List'),
+        'type' => MENU_DEFAULT_LOCAL_TASK,
+        'weight' => 1,
+    );
+    $items['newsletter/users/add'] = array(
+        'title' => t('Add'),
+        'page callback' => 'node_add',
+        'access arguments' => array('admin newsletter'),
+        'type' => MENU_LOCAL_TASK,
+        'weight' => 2,
+    );
     return $items;
 }
 
@@ -90,7 +101,6 @@ function newsletter_form($node, $form_state) {
 }
 
 function newsletter_form_alter(&$form, &$form_state, $form_id) {
-    //pre($form_id);die();
     if($form_id == 'newsletter_node_form') {
         $form['buttons']['preview']['#access'] = FALSE;
         $form['buttons']['delete']['#access'] = FALSE;
@@ -102,8 +112,6 @@ function newsletter_form_alter(&$form, &$form_state, $form_id) {
         $form['revision_information']['#access'] = FALSE;
         $form['menu']['#access'] = FALSE;
         $form['path']['#access'] = FALSE;
-        //$form['#token'] = FALSE;
         $form['#redirect'] = 'newsletter';
-        //pre($form);die();
     }
 }

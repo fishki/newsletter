@@ -58,19 +58,19 @@ function newsletter_list_form() {
     $result = $query->execute();
     $options = array();
     foreach ($result as $node) {
-    $options[$node->nid] = array(
-      'title' => $node->title,
-      'sending_date' =>  $node->sending_date,
-      'actions' => '<div>Preview</div><div>Send</div>',
+      $options[$node->nid] = array(
+        'title' => l($node->title, 'newsletter/manage/edit/' . $node->nid),
+        'sending_date' =>  $node->sending_date,
+        'actions' => '<div>' . l(t('Preview'), 'newsletter/template/' . $node->nid, array('attributes' => array('target' => '_blank'))) . '</div><div>Send</div>',
+      );
+    }
+    $form['nodes'] = array(
+      '#type' => 'tableselect',
+      '#header' => $header,
+      '#options' => $options,
+      '#empty' => t('No letter available.'),
     );
-  }
-  $form['nodes'] = array(
-    '#type' => 'tableselect',
-    '#header' => $header,
-    '#options' => $options,
-    '#empty' => t('No letter available.'),
-  );
-  $form['pager'] = array('#markup' => theme('pager'));
+    $form['pager'] = array('#markup' => theme('pager'));
   
  /*   
     while($data = db_fetch_object($result)) {
@@ -113,6 +113,11 @@ function theme_newsletter_list_search_form($variables) {
         </tr>
     </table>';
     return $output . drupal_render_children($elements);
+}
+
+function newsletter_rpeview($nid = NULL) {
+    $node = node_load($nid);
+    echo theme('node_preview', array('node' => $node));
 }
 
 function newsletter_list_user_form() {

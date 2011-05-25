@@ -116,8 +116,8 @@ function theme_newsletter_list_search_form($variables) {
 }
 
 function newsletter_rpeview($nid = NULL) {
-    $node = node_load($nid);
-    echo theme('node_preview', array('node' => $node));
+    //$node = node_load($nid);
+    echo theme('page', array('node' => $nid));
 }
 
 function newsletter_list_user_form() {
@@ -171,7 +171,7 @@ function newsletter_list_user_form() {
     $count_query = clone $query;
     $count_query->addExpression('COUNT(u.uid)');
     $query->extend('TableSort')
-      ->fields('u', array('uid', 'name'))
+      ->fields('u', array('uid', 'name', 'mail'))
       ->fields('nul', array('approved', 'unsubscribed'))
       ->limit(5)
       ->orderByHeader($header)
@@ -180,7 +180,7 @@ function newsletter_list_user_form() {
     $options = array();
     foreach ($result as $user) {
     $options[$user->uid] = array(
-      'username' => $user->name,
+      'username' => l($user->mail, 'newsletter/users/' . $user->uid . '/subscribe'),
       'approved' =>  $user->approved ? 'yes' : 'no',
       'subscribed' =>  $user->unsubscribed ? 'yes' : 'no',
     );
@@ -202,4 +202,62 @@ function newsletter_list_user_form_submit($form, $form_state) {
     if ($form_state['values']['flags']['approved']) $get_search['approved'] = '1';
     $options['query'] = $get_search;
     drupal_goto("newsletter/users", $options);
+}
+
+function newsletter_user_subscribe($user) {
+  
+    return drupal_get_form('newsletter_user_subscribe_form', $user);
+}
+
+function newsletter_user_subscribe_form($form, &$form_state, $user) {
+  //pre($user);die();
+    $form['subscribe'] = array(
+        '#type' => 'checkbox',
+        '#title' => t('Subscribe') . ' ' . $user->name . ' ' . t('for mailing'),
+    );
+    
+    $form['uid'] = array(
+        '#type' => 'value',
+        '#value' => $user->uid,
+    );
+    
+    $form['submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('Subscribe'),
+    );
+    
+    return $form;
+}
+
+function newsletter_user_subscribe_form_submit($form, $form_state) {
+    if($form_state['values']['subscribe']) {
+        $user = user_load($form_state['values']['uid']);
+        $subscribe_key = md5('subscribe' . time());
+        $unsubscribe_key = md5('unsubscribe' . time());
+        $result = db_query("SELECT COUNT(*) FROM {newsletter_user_list} WHERE uid = :uid", array(':uid' => $form_state['values']['uid']));
+        //echo $form_state['values']['uid'];
+        if($result) {
+            $vars['approve_key'] = $subscribe_key;
+            $vars['unsubscribe_key'] = $unsubscribe_key;
+            $vars['uid'] = $form_state['values']['uid'];
+            pre($vars);die();
+            drupal_write_record('newsletter_user_list', $vars, 'uid');
+        }
+        else {
+            $vars['approve_key'] = $subscribe_key;
+            //$vars['uid'] = $form_state['values']['uid'];
+            //drupal_write_record('newsletter_user_list', $vars);
+            $nid = db_insert('newsletter_user_list')
+            ->fields(array('uid' => $form_state['values']['uid'], 'approve_key' => $subscribe_key, 'unsubscribe_key' => $unsubscribe_key))
+            ->execute();
+            //pre($nid);die();
+            //db_query("INSERT INTO {newsletter_user_list} (uid, approve_key, unsubscribe_key) VALUES (:uid, '%s')", array(':uid' => $form_state['values']['uid'], $subscribe_key, $unsubscribe_key));
+        }
+        $user_account['approve_key'] = $subscribe_key;
+        $user_account['name'] = $user->name;
+        $mail = newsletter_user_mail_notify('newsletter_approve_notification', (object)$user_account);
+        if($mail) {
+            drupal_set_message(t('User %username has been subscribed', array('%username' => $user->name)));
+        }
+    }
 }

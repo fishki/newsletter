@@ -95,6 +95,16 @@ function newsletter_menu() {
         'file' => 'newsletter.admin.inc',
         'type' => MENU_CALLBACK,
     );
+    $items['newsletter/users/%user/subscribe'] = array(
+        'title' => t('Subscribe'),
+        'page callback' => 'newsletter_user_subscribe',
+        'access callback' => 'user_access',
+        'access arguments' => array('admin newsletter'),
+        'page arguments' => array(2),
+        'file' => 'newsletter.admin.inc',
+        'type' => MENU_LOCAL_TASK,
+        'weight' => 4,
+     );
     return $items;
 }
 
@@ -143,5 +153,18 @@ function newsletter_form_alter(&$form, &$form_state, $form_id) {
         $form['menu']['#access'] = FALSE;
         $form['path']['#access'] = FALSE;
         $form['#redirect'] = 'newsletter';
+    }
+}
+
+function newsletter_preprocess_page(&$vars) {
+  //pre($vars);die;
+    if(in_array('page__newsletter__template', $vars['theme_hook_suggestions'])) {
+        global $base_url;
+        $vars['file_root'] = $base_url . base_path() . drupal_get_path('module', 'newsletter') . '/files';
+        $node = node_load($vars['node']);
+        //pre($node);die;
+        $vars['newsletter_title'] = $node->title;
+        $vars['newsletter_body'] = $node->body[und][0]['value'];
+        //pre($vars);die;
     }
 }

@@ -1,5 +1,6 @@
 <?php
 // $Id:$
+
 function newsletter_list_form() {
     $form['search'] = array(
         '#type' => 'fieldset',
@@ -234,13 +235,13 @@ function newsletter_user_subscribe_form_submit($form, $form_state) {
         $user = user_load($form_state['values']['uid']);
         $subscribe_key = md5('subscribe' . time());
         $unsubscribe_key = md5('unsubscribe' . time());
-        $result = db_query("SELECT COUNT(*) FROM {newsletter_user_list} WHERE uid = :uid", array(':uid' => $form_state['values']['uid']));
-        //echo $form_state['values']['uid'];
+        $result = db_query("SELECT COUNT(*) FROM {newsletter_user_list} WHERE uid = :uid", array(':uid' => $form_state['values']['uid']))->fetchField();;
+        //pre($result);die();
         if($result) {
             $vars['approve_key'] = $subscribe_key;
             $vars['unsubscribe_key'] = $unsubscribe_key;
             $vars['uid'] = $form_state['values']['uid'];
-            pre($vars);die();
+            //pre($vars);die();
             drupal_write_record('newsletter_user_list', $vars, 'uid');
         }
         else {

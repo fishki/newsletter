@@ -1,6 +1,5 @@
 <?php
 // $Id:$
-
 function pre($txt) {
   echo '<pre>';
   print_r($txt);
@@ -167,4 +166,64 @@ function newsletter_preprocess_page(&$vars) {
         $vars['newsletter_body'] = $node->body[und][0]['value'];
         //pre($vars);die;
     }
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////
+////GOOOOO
+//
+///////////////////////////////////////////////////////////////////////////////////////
+
+function newsletter_user_mail_text($key, $language = NULL, $variables = array()) {
+	$langcode = isset($language) ? $language->language : NULL;
+        $admin_setting = variable_get('user_mail_'. $key, FALSE);
+	if ($admin_setting) {
+            return strtr($admin_setting, $variables); //t()
+	}
+	else {
+		switch ($key) {
+			case 'newsletter_approve_notification_subject':
+				return t('Notification title', $variables, $langcode);
+			case 'newsletter_approve_notification_body':
+				return t('Notification body !approve_link', $variables, $langcode);
+		}
+	}
+}
+
+function newsletter_user_mail_tokens($account, $language) {
+	$tokens = array(
+            '!approve_link' => url('confirm_subscription/' . $account->approve_key, array('absolute' => TRUE, 'language' => $language)),
+            '!unsubscribe_link' => url('unsubscribe/' . $account->unsubscribe_key, array('absolute' => TRUE, 'language' => $language)),
+            '!newsletter_web_link' => url('newsletter/template/' . $account->newsletter_id, array('absolute' => TRUE, 'language' => $language)),
+            
+	);
+        $additional_tokens = user_mail_tokens($account, $language);
+        $tokens = $tokens + $additional_tokens;
+	return $tokens;
+}
+
+function newsletter_mail($key, &$message, $params) {
+	$language = $message['language'];
+	$variables = newsletter_user_mail_tokens($params['account'], $language);
+        
+	switch($params['mail_type']) {
+		case 'notification':
+			$message['subject'] .= newsletter_user_mail_text($key .'_subject', $language, $variables);
+			$message['body'][] = newsletter_user_mail_text($key .'_body', $language, $variables);
+			break;
+		case 'mailing':
+			$message['headers']['Content-Type'] = 'text/html; charset=UTF-8; format=flowed; delsp=yes';
+			$message['subject'] = $params['mailing_subject'];
+			$message['body'][] = strtr($params['mailing_body'], $variables);
+			break;
+	}
+}
+
+function newsletter_user_mail_notify($op, $account, $language = NULL, $params = array(), $type = 'notification') {
+	 $params['account'] = $account;
+	 $params['mail_type'] = $type;
+	 $language = $language ? $language : user_preferred_language($account);
+	 $mail = drupal_mail('newsletter', $op, $account->mail, $language, $params);
+	 return empty($mail) ? NULL : $mail['result'];
 }

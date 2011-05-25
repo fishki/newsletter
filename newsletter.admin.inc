@@ -256,6 +256,7 @@ function newsletter_user_subscribe_form_submit($form, $form_state) {
         }
         $user_account['approve_key'] = $subscribe_key;
         $user_account['name'] = $user->name;
+        $user_account['mail'] = $user->mail;
         $mail = newsletter_user_mail_notify('newsletter_approve_notification', (object)$user_account);
         if($mail) {
             drupal_set_message(t('User %username has been subscribed', array('%username' => $user->name)));

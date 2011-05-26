@@ -175,6 +175,7 @@ function newsletter_preprocess_page(&$vars) {
 //
 ///////////////////////////////////////////////////////////////////////////////////////
 
+
 function newsletter_user_mail_text($key, $language = NULL, $variables = array()) {
 	$langcode = isset($language) ? $language->language : NULL;
         $admin_setting = variable_get('user_mail_'. $key, FALSE);

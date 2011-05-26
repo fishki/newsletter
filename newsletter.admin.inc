@@ -258,8 +258,19 @@ function newsletter_user_subscribe_form_submit($form, $form_state) {
         $user_account['name'] = $user->name;
         $user_account['mail'] = $user->mail;
         $mail = newsletter_user_mail_notify('newsletter_approve_notification', (object)$user_account);
+        //pre($mail);die();
         if($mail) {
             drupal_set_message(t('User %username has been subscribed', array('%username' => $user->name)));
         }
     }
+}
+
+function newsletter_user_subscribe_confirmation($key) {
+    $result = db_query("SELECT COUNT(*) FROM {newsletter_user_list} WHERE approve_key = :key", array(':key' => $key))->fetchField();
+    if($result) {
+        $vars['approved'] = 1;
+        $vars['approve_key'] = $key;
+        drupal_write_record('newsletter_user_list', $vars, 'approve_key');
+    }
+    return t('You have successfuly approved');
 }

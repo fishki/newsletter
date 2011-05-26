@@ -104,6 +104,17 @@ function newsletter_menu() {
         'type' => MENU_LOCAL_TASK,
         'weight' => 4,
      );
+    $items['confirm_subscription/%'] = array(
+        'title' => t('Subscribe confirmation'),
+        'page callback' => 'newsletter_user_subscribe_confirmation',
+        'access callback' => 'user_access',
+        'access arguments' => array('admin newsletter'),
+        'page arguments' => array(1),
+        'file' => 'newsletter.admin.inc',
+        'type' => MENU_CALLBACK,
+        'weight' => 2,
+     );
+
     return $items;
 }
 
@@ -177,6 +188,20 @@ function newsletter_preprocess_page(&$vars) {
 
 
 function newsletter_user_mail_text($key, $language = NULL, $variables = array()) {
+/*
+  pre($variables);die();
+ Array
+(
+    [user] => stdClass Object
+        (
+            [approve_key] => 6d4ad12d59595f48264f3948ae464216
+            [name] => user1
+            [mail] => user1@localhost.my
+        )
+
+)
+*/
+
 	$langcode = isset($language) ? $language->language : NULL;
         $admin_setting = variable_get('user_mail_'. $key, FALSE);
 	if ($admin_setting) {
@@ -185,13 +210,28 @@ function newsletter_user_mail_text($key, $language = NULL, $variables = array())
 	else {
 		switch ($key) {
 			case 'newsletter_approve_notification_subject':
-				return t('Notification title', $variables, $langcode);
+				//return t('Notification title', $variables, $langcode);
+     return token_replace('Notification title', $variables, array('language' => $language, 'callback' => 'newsletter_user_mail_tokens', 'sanitize' => FALSE));
 			case 'newsletter_approve_notification_body':
-				return t('Notification body !approve_link', $variables, $langcode);
+				//return t('Notification body !approve_link', $variables, $langcode);
+     $x = token_replace('Notification body !approve_link', $variables, array('language' => $language, 'callback' => 'newsletter_user_mail_tokens', 'sanitize' => FALSE));
+     return $x;
 		}
 	}
 }
 
+function newsletter_user_mail_tokens(&$replacements, $data, $options) {
+  //pre($data['user']->approve_key);die();
+  if (isset($data['user'])) {
+    $replacements['!approve_link'] = url('confirm_subscription/' . $data['user']->approve_key, array('absolute' => TRUE));
+    //$replacements['!unsubscribe_link'] = url('unsubscribe/' . $data['user']->unsubscribe_key, array('absolute' => TRUE));
+    //$replacements['!newsletter_web_link'] = url('newsletter/template/' . $data['user']->newsletter_id, array('absolute' => TRUE));
+    
+    //$replacements['[user:one-time-login-url]'] = user_pass_reset_url($data['user']);
+    //$replacements['[user:cancel-url]'] = user_cancel_url($data['user']);
+  }
+}
+/*
 function newsletter_user_mail_tokens($account, $language) {
   
 	$tokens = array(
@@ -205,14 +245,17 @@ function newsletter_user_mail_tokens($account, $language) {
         //$tokens = $tokens + $additional_tokens;
 	return $tokens;
 }
+*/
 
 function newsletter_mail($key, &$message, $params) {
 	$language = $message['language'];
-	$variables = newsletter_user_mail_tokens($params['account'], $language);
+	//$variables = newsletter_user_mail_tokens($params['account'], $language);
+ $variables = array('user' => $params['account']);
  switch($params['mail_type']) {
 		case 'notification':
 			$message['subject'] .= newsletter_user_mail_text($key .'_subject', $language, $variables);
 			$message['body'][] = newsletter_user_mail_text($key .'_body', $language, $variables);
+   //pre($message);die();
 			break;
 		case 'mailing':
 			$message['headers']['Content-Type'] = 'text/html; charset=UTF-8; format=flowed; delsp=yes';
@@ -223,12 +266,9 @@ function newsletter_mail($key, &$message, $params) {
 }
 
 function newsletter_user_mail_notify($op, $account, $language = NULL, $params = array(), $type = 'notification') {
-
 	 $params['account'] = $account;
 	 $params['mail_type'] = $type;
 	 $language = $language ? $language : user_preferred_language($account);
-  //pre($account);die();
 	 $mail = drupal_mail('newsletter', $op, $account->mail, $language, $params);
-  
 	 return empty($mail) ? NULL : $mail['result'];
 }

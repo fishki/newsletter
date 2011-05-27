@@ -62,7 +62,8 @@ function newsletter_list_form() {
       $options[$node->nid] = array(
         'title' => l($node->title, 'newsletter/manage/edit/' . $node->nid),
         'sending_date' =>  $node->sending_date,
-        'actions' => '<div>' . l(t('Preview'), 'newsletter/template/' . $node->nid, array('attributes' => array('target' => '_blank'))) . '</div><div>Send</div>',
+        'actions' => '<div>' . l(t('Preview'), 'newsletter/template/' . $node->nid, array('attributes' => array('target' => '_blank'))) 
+                      . '</div><div>' . l(t('Send'), 'send_mailiing/' . $node->nid, array('attributes' => array('calss' => 'send_link'))) . '</div>',
       );
     }
     $form['nodes'] = array(
@@ -273,4 +274,31 @@ function newsletter_user_subscribe_confirmation($key) {
         drupal_write_record('newsletter_user_list', $vars, 'approve_key');
     }
     return t('You have successfuly approved');
+}
+
+function newsletter_send($node) {
+    global $base_url;
+    $newsletter_content = file_get_contents($base_url . '/newsletter/template/' . $node->nid);
+    $result = db_query("SELECT ul.uid, u.mail, ul.unsubscribe_key FROM {newsletter_user_list} ul LEFT JOIN {users} u ON u.uid = ul.uid WHERE ul.approved = 1");
+    foreach ($result as $user){
+        $user_account['unsubscribe_key'] = $user->unsubscribe_key;
+        $params['mailing_subject'] = $node->title;
+        $user_account['mail'] = $user->mail;
+        $params['mailing_body'] = $newsletter_content;
+        $user_account['newsletter_id'] = $node->nid;
+        $mail = newsletter_user_mail_notify('', (object)$user_account, null, $params, 'mailing');
+    }
+    drupal_set_message(t('Newsletter %newsletter has been sent', array('%newsletter' => $node->title)));
+    return '';
+}
+
+function newsletter_mail_unsubscribing($key) {
+    $key = trim($key);
+    $result = db_result(db_query("SELECT COUNT(*) FROM {newsletter_user_list} WHERE unsubscribe_key = '%s'", $key));
+    echo $result;
+    if($result) {
+        db_query("UPDATE {newsletter_user_list} SET unsubscribed = 1 WHERE unsubscribe_key = '%s'", $key);
+        drupal_set_message(t('You have successfuly unsubscribed'));
+        return '';
+    }
 }

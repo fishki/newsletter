@@ -76,6 +76,17 @@ function newsletter_menu() {
         'type' => MENU_LOCAL_TASK,
         'weight' => 2,
     );
+    $items['newsletter/users/%user/subscribe'] = array(
+        'title' => t('Subscribe'),
+        'page callback' => 'newsletter_user_subscribe',
+        'access callback' => 'user_access',
+        'access arguments' => array('admin newsletter'),
+        'page arguments' => array(2),
+        'file' => 'newsletter.admin.inc',
+        'type' => MENU_LOCAL_TASK,
+        //'context' => MENU_CONTEXT_NONE,
+        'weight' => 3,
+     );
     $items['newsletter/manage/edit/%node'] = array(
         'title' => t('Edit newsletter'),
         'page callback' => 'node_page_edit',
@@ -94,16 +105,7 @@ function newsletter_menu() {
         'file' => 'newsletter.admin.inc',
         'type' => MENU_CALLBACK,
     );
-    $items['newsletter/users/%user/subscribe'] = array(
-        'title' => t('Subscribe'),
-        'page callback' => 'newsletter_user_subscribe',
-        'access callback' => 'user_access',
-        'access arguments' => array('admin newsletter'),
-        'page arguments' => array(2),
-        'file' => 'newsletter.admin.inc',
-        'type' => MENU_LOCAL_TASK,
-        'weight' => 4,
-     );
+    
     $items['confirm_subscription/%'] = array(
         'title' => t('Subscribe confirmation'),
         'page callback' => 'newsletter_user_subscribe_confirmation',
@@ -114,7 +116,26 @@ function newsletter_menu() {
         'type' => MENU_CALLBACK,
         'weight' => 2,
      );
-
+    $items['send_mailiing/%node'] = array(
+        'title' => t('Mail sending'),
+        'page callback' => 'newsletter_send',
+        'access callback' => 'user_access',
+        'access arguments' => array('admin newsletter'),
+        'page arguments' => array(1),
+        'file' => 'newsletter.admin.inc',
+        'type' => MENU_CALLBACK,
+        'weight' => 2,
+     );
+    $items['unsubscribe/%'] = array(
+        'title' => t('Mail unsubscribing'),
+        'page callback' => 'newsletter_mail_unsubscribing',
+        'access callback' => 'user_access',
+        'access arguments' => array('admin newsletter'),
+        'page arguments' => array(1),
+        'file' => 'newsletter.admin.inc',
+        'type' => MENU_CALLBACK,
+        'weight' => 2,
+     );
     return $items;
 }
 
@@ -178,14 +199,6 @@ function newsletter_preprocess_page(&$vars) {
         //pre($vars);die;
     }
 }
-
-
-
-////////////////////////////////////////////////////////////////////////////////////////
-////GOOOOO
-//
-///////////////////////////////////////////////////////////////////////////////////////
-
 
 function newsletter_user_mail_text($key, $language = NULL, $variables = array()) {
 /*

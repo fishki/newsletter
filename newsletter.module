@@ -76,7 +76,7 @@ function newsletter_menu() {
         'type' => MENU_LOCAL_TASK,
         'weight' => 2,
     );
-    $items['newsletter/users/%user/subscribe'] = array(
+    $items['newsletter/users/%node/subscribe'] = array(
         'title' => t('Subscribe'),
         'page callback' => 'newsletter_user_subscribe',
         'access callback' => 'user_access',
